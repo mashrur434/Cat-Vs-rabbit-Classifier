@@ -1,0 +1,65 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Cat vs Rabbit Classifier</title>
+</head>
+<body>
+
+<h2>Upload an Image</h2>
+
+<input type="file" id="fileInput" accept="image/*" onchange="previewImage(event)">
+
+<br><br>
+
+<img id="preview" src="#" style="max-width:300px; display:none; border:1px solid #ccc;">
+
+<br><br>
+<button onclick="uploadImage()">Predict</button>
+
+<h2 id="result"></h2>
+
+<script>
+let selectedFile;
+
+function previewImage(event) {
+    selectedFile = event.target.files[0];
+    var output = document.getElementById('preview');
+    output.src = URL.createObjectURL(selectedFile);
+    output.style.display = 'block';
+}
+
+function uploadImage() {
+    if (!selectedFile) {
+        alert("Please select an image.");
+        return;
+    }
+
+    let formData = new FormData();
+    formData.append("file", selectedFile);
+
+    fetch("/predict", {
+        method: "POST",
+        body: formData
+    })
+    .then(res => res.json())
+    .then(data => {
+        if(data.error){
+            document.getElementById("result").innerHTML = data.error;
+        } else {
+            document.getElementById("result").innerHTML = `
+                <h3>Prediction: ${data.class}</h3>
+                <p>Probability: ${data.probability}</p>
+                
+            `;
+        }
+    })
+    .catch(err => {
+        document.getElementById("result").innerHTML = "Error predicting image!";
+        console.error(err);
+    });
+}
+</script>
+
+</body>
+</html>
+
